@@ -85,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
       });
     } catch (e) {
       setState(() {
-        errorMessage = 'Failed to connect to Firebase. Check your connection.';
+        errorMessage = 'Check your connection.';
       });
     } finally {
       setState(() {
