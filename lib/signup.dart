@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 import 'package:google_sign_in/google_sign_in.dart';
 import 'home_page.dart'; // Ensure correct path
+import 'login.dart'; // Ensure correct path to login page
+import 'package:flutter/services.dart'; // For input formatter
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -11,16 +14,18 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
-  final TextEditingController nameController = TextEditingController();
+  final TextEditingController ageController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  String errorMessage = '';
+  bool isLoading = false;
+  final TextEditingController nameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController phoneNumberController = TextEditingController(text: '+91'); // Start with +91
+  String selectedGender = 'Male'; // Default gender
 
-  bool isLoading = false; // Show loading spinner
-  String errorMessage = ''; // Show error messages
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(); // Initialize Google Sign In
-
-  // Function to handle signup
+  // Function to handle sign-up
   Future<void> register() async {
     setState(() {
       isLoading = true;
@@ -30,8 +35,11 @@ class _SignupPageState extends State<SignupPage> {
     final name = nameController.text.trim();
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
+    final age = ageController.text.trim();
+    final phoneNumber = phoneNumberController.text.trim();
+    final gender = selectedGender;
 
-    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+    if (name.isEmpty || email.isEmpty || password.isEmpty || age.isEmpty || phoneNumber.isEmpty || gender.isEmpty) {
       setState(() {
         isLoading = false;
         errorMessage = 'All fields are required.';
@@ -41,66 +49,25 @@ class _SignupPageState extends State<SignupPage> {
 
     try {
       // Firebase Authentication: Register user
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Optionally, update user profile with the name
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        await user.updateProfile(displayName: name);
-      }
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
-    } catch (e) {
-      setState(() {
-        errorMessage = 'An error occurred. Please try again later.';
-      });
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  // Function to handle Google sign-in
-  Future<void> signInWithGoogle() async {
-    setState(() {
-      isLoading = true;
-      errorMessage = '';
-    });
-
-    try {
-      // Trigger the authentication flow
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        // User canceled the login
-        setState(() {
-          isLoading = false;
-        });
-        return;
-      }
-
-      // Obtain the auth details from the request
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-      // Create a new credential
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      // This token can be used for Firebase Auth
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-
-      // Optionally, update user profile with the name
       User? user = userCredential.user;
       if (user != null) {
-        await user.updateProfile(displayName: googleUser.displayName);
+        // Save the user data in Firestore
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'name': name,
+          'email': email,
+          'age': age,
+          'phoneNumber': phoneNumber,
+          'gender': gender,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        // Optionally, update user profile with the name
+        await user.updateProfile(displayName: name);
       }
 
       Navigator.pushReplacement(
@@ -125,27 +92,20 @@ class _SignupPageState extends State<SignupPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Top image section
-            Container(
-              height: 200,
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/top_background.png'), // Background image path
-                  fit: BoxFit.cover,
-                ),
+            const SizedBox(height: 80),
+
+            // Welcome Text
+            const Text(
+              'Welcome 👋',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
-              child: const Center(
-                child: Text(
-                  'Create Your Account',
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 40),
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 30),
               child: Column(
@@ -189,6 +149,60 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 20),
+
+                  // Age input
+                  TextField(
+                    controller: ageController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.cake),
+                      labelText: 'Age',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Gender dropdown
+                  DropdownButtonFormField<String>(
+                    value: selectedGender,
+                    items: const [
+                      DropdownMenuItem(value: 'Male', child: Text('Male')),
+                      DropdownMenuItem(value: 'Female', child: Text('Female')),
+                      DropdownMenuItem(value: 'Other', child: Text('Other')),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        selectedGender = value ?? 'Male';
+                      });
+                    },
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.wc),
+                      labelText: 'Gender',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Phone Number input
+                  TextField(
+                    controller: phoneNumberController,
+                    keyboardType: TextInputType.phone,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'^\+91[0-9]*')), // Ensure phone starts with +91
+                    ],
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.phone),
+                      labelText: 'Phone Number',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 30),
 
                   // Sign Up button
@@ -203,31 +217,10 @@ class _SignupPageState extends State<SignupPage> {
                     ),
                     child: isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Sign Up', style: TextStyle(fontSize: 18)),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Or separator
-                  const Text(
-                    'Or',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Google sign-in button
-                  ElevatedButton.icon(
-                    onPressed: signInWithGoogle, // Call the function for Google sign-in
-                    icon: Image.asset('assets/google_icon.png', height: 24), // Google icon
-                    label: const Text('Log In with Google'),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        side: const BorderSide(color: Colors.grey),
-                      ),
-                    ),
+                        : const Text(
+                            'Sign Up',
+                            style: TextStyle(fontSize: 18, color: Colors.white),
+                          ),
                   ),
                   const SizedBox(height: 20),
 
@@ -240,9 +233,10 @@ class _SignupPageState extends State<SignupPage> {
 
                   // Login navigation
                   TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
+                    onPressed: () => Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginPage()), // Ensure you have a LoginPage
+                    ),
                     child: const Text(
                       'Already have an account? Log in',
                       style: TextStyle(fontSize: 16, color: Colors.blue),
