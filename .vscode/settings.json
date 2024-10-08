@@ -1,3 +1,6 @@
 {
-    "cmake.sourceDirectory": "a:/Flutter/haiauto_user/windows"
+    "cmake.sourceDirectory": "a:/Flutter/haiauto_user/windows",
+    "files.watcherExclude": {
+        "**/target": true
+    }
 }
