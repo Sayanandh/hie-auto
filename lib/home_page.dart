@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'ride_nearby_page.dart'; // Import the RideNearbyPage
 import 'activity_page.dart'; // Import the ActivityPage
+import 'profile_page.dart'; // Import the ProfilePage
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -21,6 +22,16 @@ class HomePage extends StatelessWidget {
       context,
       MaterialPageRoute(
         builder: (context) => const ActivityPage(),
+      ),
+    );
+  }
+
+  // Function to navigate to the ProfilePage
+  void _navigateToProfile(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ProfilePage(), // Ensure the ProfilePage constructor is correct
       ),
     );
   }
@@ -210,8 +221,13 @@ class HomePage extends StatelessWidget {
             ),
             label: 'Activity',
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
+          BottomNavigationBarItem(
+            icon: IconButton(
+              icon: const Icon(Icons.person_outline),
+              onPressed: () {
+                _navigateToProfile(context); // Navigate to profile page
+              },
+            ),
             label: 'Profile',
           ),
           const BottomNavigationBarItem(

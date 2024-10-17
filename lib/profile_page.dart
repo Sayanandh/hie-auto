@@ -9,162 +9,141 @@ class ProfilePage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: const Text(
-          'Profile',
+          'Your Profile',
           style: TextStyle(
             color: Colors.white,
-            fontFamily: 'CustomFont', // Use custom font
           ),
         ),
       ),
-      body: SingleChildScrollView(
+      body: Container(
+        color: Colors.white, // Set background color to white
         padding: const EdgeInsets.all(16.0),
-        child: Column(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Profile Image
+              const Center(
+                child: CircleAvatar(
+                  radius: 60,
+                  backgroundImage: NetworkImage('https://via.placeholder.com/150'), // Placeholder image
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // First Name
+              _buildProfileField(context, 'First name', 'Marin'),
+              const SizedBox(height: 16),
+
+              // Last Name
+              _buildProfileField(context, 'Last name', 'JS Mastery'),
+              const SizedBox(height: 16),
+
+              // Email
+              _buildProfileField(context, 'Email', 'marin@jsmastery.pro', isEmail: true),
+              const SizedBox(height: 8),
+
+              // Email status
+              const Text(
+                'Email status:',
+                style: TextStyle(
+                  fontSize: 14,
+                ),
+              ),
+              const Text(
+                'Verified',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.green,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Phone Number
+              _buildProfileField(context, 'Phone number', '+5547824162'),
+            ],
+          ),
+        ),
+      ),
+
+      // Bottom Navigation Bar
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.home, color: Colors.black),
+                onPressed: () {
+                  // Navigate to Home
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.message, color: Colors.black),
+                onPressed: () {
+                  // Navigate to Messages
+                },
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  // Perform the save action
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.yellow,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  'Save',
+                  style: TextStyle(
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.person, color: Colors.black),
+                onPressed: () {
+                  // Navigate to Profile
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileField(BuildContext context, String label, String value, {bool isEmail = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Profile Image
-            const CircleAvatar(
-              radius: 60,
-              backgroundImage: NetworkImage('https://via.placeholder.com/150'), // Placeholder image
-            ),
-            const SizedBox(height: 20),
-            
-            // Personal Details in a Card
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              color: Colors.white,
-              child: const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Name: John Doe',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'CustomFont', // Use custom font
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Phone: +123 456 7890',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontFamily: 'CustomFont', // Use custom font
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Email: johndoe@email.com',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontFamily: 'CustomFont', // Use custom font
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Address: 123 Main St, City, Country',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontFamily: 'CustomFont', // Use custom font
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 30),
-
-            // Recent Ride Activity
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Recent Rides',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'CustomFont', // Use custom font
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            ListView(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              children: const [
-                ListTile(
-                  leading: Icon(Icons.directions_bus, color: Colors.black), // Using a bus icon for rickshaws
-                  title: Text(
-                    'Ride to Downtown',
-                    style: TextStyle(
-                      fontFamily: 'CustomFont', // Use custom font
-                    ),
+            Text(label, style: const TextStyle(fontSize: 16)),
+            Container(
+              width: 250, // Set a width to control the field's size
+              child: TextField(
+                enabled: false, // Set to false to make it non-editable
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Colors.grey),
                   ),
-                  subtitle: Text(
-                    'Date: Sep 15, 2024 - Fare: \$20',
-                    style: TextStyle(
-                      fontFamily: 'CustomFont', // Use custom font
-                    ),
-                  ),
-                ),
-                ListTile(
-                  leading: Icon(Icons.directions_bus, color: Colors.black),
-                  title: Text(
-                    'Ride to Airport',
-                    style: TextStyle(
-                      fontFamily: 'CustomFont', // Use custom font
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Date: Sep 10, 2024 - Fare: \$35',
-                    style: TextStyle(
-                      fontFamily: 'CustomFont', // Use custom font
-                    ),
-                  ),
-                ),
-                ListTile(
-                  leading: Icon(Icons.directions_bus, color: Colors.black),
-                  title: Text(
-                    'Ride to Mall',
-                    style: TextStyle(
-                      fontFamily: 'CustomFont', // Use custom font
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Date: Sep 05, 2024 - Fare: \$12',
-                    style: TextStyle(
-                      fontFamily: 'CustomFont', // Use custom font
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 30),
-
-            // Back to Home Button
-            ElevatedButton(
-              onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.yellow,
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: const Text(
-                'Back to Home',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontFamily: 'CustomFont', // Use custom font
+                  filled: true,
+                  fillColor: Colors.grey.shade200,
+                  hintText: value,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                 ),
               ),
             ),
           ],
         ),
-      ),
+        const Icon(Icons.edit, color: Colors.grey), // Edit icon
+      ],
     );
   }
 }

@@ -18,10 +18,10 @@ class WelcomePage extends StatelessWidget {
               
               // Top image (optional, you can adjust or remove)
               Image.asset(
-                'assets/car_image.png', // Replace with your image asset
+                'assets/haiauto.png', // Replace with your image asset
                 width: double.infinity,
                 height: 200,
-                fit: BoxFit.cover, // Make the image cover the width
+                //fit: BoxFit.cover, // Make the image cover the width
               ),
               
               const Spacer(flex: 1), // Add space between image and text
