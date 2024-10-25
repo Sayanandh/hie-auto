@@ -73,14 +73,14 @@ class RideCard extends StatelessWidget {
   final String paymentStatus;
 
   const RideCard({
-    Key? key,
+    super.key,
     required this.pickUp,
     required this.dropOff,
     required this.dateTime,
     required this.driverName,
     required this.carSeats,
     required this.paymentStatus,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -230,10 +230,10 @@ class HomePage extends StatelessWidget {
             ),
             label: 'Profile',
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.menu),
-            label: 'More',
-          ),
+          // const BottomNavigationBarItem(
+          //   icon: Icon(Icons.menu),
+          //   label: 'More',
+          // ),
         ],
       ),
     );

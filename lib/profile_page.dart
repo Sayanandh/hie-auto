@@ -7,16 +7,20 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.white, // App bar background color set to white
+        elevation: 0, // Remove shadow from the app bar
         title: const Text(
           'Your Profile',
           style: TextStyle(
-            color: Colors.white,
+            color: Colors.black, // Set title text color to black
           ),
+        ),
+        iconTheme: const IconThemeData(
+          color: Colors.black, // Set the icon color to black
         ),
       ),
       body: Container(
-        color: Colors.white, // Set background color to white
+        color: Colors.white, // Set the entire background to white
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
@@ -42,21 +46,29 @@ class ProfilePage extends StatelessWidget {
 
               // Email
               _buildProfileField(context, 'Email', 'marin@jsmastery.pro', isEmail: true),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
 
               // Email status
               const Text(
-                'Email status:',
+                'Email status',
                 style: TextStyle(
                   fontSize: 14,
+                  color: Colors.black54,
                 ),
               ),
-              const Text(
-                'Verified',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.green,
-                ),
+              const SizedBox(height: 4),
+              Row(
+                children: const [
+                  Icon(Icons.verified, color: Colors.green),
+                  SizedBox(width: 5),
+                  Text(
+                    'Verified',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.green,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
 
@@ -66,85 +78,45 @@ class ProfilePage extends StatelessWidget {
           ),
         ),
       ),
-
-      // Bottom Navigation Bar
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.white,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.home, color: Colors.black),
-                onPressed: () {
-                  // Navigate to Home
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.message, color: Colors.black),
-                onPressed: () {
-                  // Navigate to Messages
-                },
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  // Perform the save action
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.yellow,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text(
-                  'Save',
-                  style: TextStyle(
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.person, color: Colors.black),
-                onPressed: () {
-                  // Navigate to Profile
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
   Widget _buildProfileField(BuildContext context, String label, String value, {bool isEmail = false}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 16)),
-            SizedBox(
-              width: 250, // Set a width to control the field's size
-              child: TextField(
-                enabled: false, // Set to false to make it non-editable
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Colors.grey),
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey.shade200,
-                  hintText: value,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                ),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 14, color: Colors.black54)),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-            ),
-          ],
-        ),
-        const Icon(Icons.edit, color: Colors.grey), // Edit icon
-      ],
+            ],
+          ),
+          IconButton(
+            icon: const Icon(Icons.edit, color: Colors.grey),
+            onPressed: () {
+              // Edit action
+            },
+          ),
+        ],
+      ),
     );
   }
 }

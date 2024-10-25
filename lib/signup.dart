@@ -43,6 +43,9 @@ class _SignupPageState extends State<SignupPage> {
 
       User? user = userCredential.user;
       if (user != null && mounted) {  // Ensure widget is still mounted
+        // Debugging: Check if user UID is obtained correctly
+        print("User registered with UID: ${user.uid}");
+        
         // Show the pop-up to collect additional details
         showUserDetailsDialog(context, user);
       }
@@ -95,6 +98,7 @@ class _SignupPageState extends State<SignupPage> {
             ElevatedButton(
               onPressed: () {
                 if (nameController.text.isNotEmpty && phoneController.text.isNotEmpty) {
+                  print("Attempting to save user details...");
                   saveUserDetails(
                     user.uid,
                     nameController.text,
@@ -138,6 +142,9 @@ class _SignupPageState extends State<SignupPage> {
         'preferredLanguage': language,
         'email': emailController.text.trim(),
       });
+
+      // Debugging: Check if data was saved successfully
+      print("User details saved for UID: $userId");
     } catch (e) {
       setState(() {
         errorMessage = 'Failed to save user details. Please try again later.';
