@@ -52,19 +52,19 @@ class _IntroductionPagesState extends State<IntroductionPages> {
         },
         children: [
           _buildPage(
-            title: 'The best car in your hands with Ryde',
+            title: 'The best drive in your hands with Hye-Auto',
             description: 'Discover the convenience of finding your perfect ride with our Ryde App',
-            image: 'assets/introduction1.png', // Replace with your assets
+            image: 'assets/image.png', 
           ),
           _buildPage(
             title: 'The perfect ride is just a tap away!',
             description: 'Your journey begins with Ryde. Find your ideal ride effortlessly.',
-            image: 'assets/introduction2.png', // Replace with your assets
+            image: 'assets/image.png', 
           ),
           _buildPage(
             title: 'Your ride, your way. Let\'s get started!',
             description: 'Enter your destination, sit back, and let us take care of the rest.',
-            image: 'assets/introduction3.png', // Replace with your assets
+            image: 'assets/image.png', 
           ),
         ],
       ),
