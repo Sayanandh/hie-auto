@@ -51,7 +51,7 @@ class HomePage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Welcome Rincy',
+                    'Welcome Traveller',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -162,7 +162,7 @@ class HomePage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: const [
                           Text(
-                            'Behind Adlux Hos',
+                            'Behind SCMS',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -179,7 +179,7 @@ class HomePage extends StatelessWidget {
                             style: TextStyle(fontSize: 14, color: Colors.black),
                           ),
                           Text(
-                            'Driver: Sayy Boss | Bike Seats: 2',
+                            'Driver: Auto Driver | Seats: 4',
                             style: TextStyle(fontSize: 14, color: Colors.black),
                           ),
                           Text(

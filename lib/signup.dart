@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'home_page.dart'; // Ensure correct path
-import 'login.dart'; // Ensure correct path to login page
-import 'package:flutter/services.dart'; // For input formatter
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -14,16 +11,10 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
-  final TextEditingController ageController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
   String errorMessage = '';
   bool isLoading = false;
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController phoneNumberController = TextEditingController(text: '+91'); // Start with +91
-  String selectedGender = 'Male'; // Default gender
-
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   // Function to handle sign-up
   Future<void> register() async {
@@ -32,17 +23,13 @@ class _SignupPageState extends State<SignupPage> {
       errorMessage = '';
     });
 
-    final name = nameController.text.trim();
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
-    final age = ageController.text.trim();
-    final phoneNumber = phoneNumberController.text.trim();
-    final gender = selectedGender;
 
-    if (name.isEmpty || email.isEmpty || password.isEmpty || age.isEmpty || phoneNumber.isEmpty || gender.isEmpty) {
+    if (email.isEmpty || password.isEmpty) {
       setState(() {
         isLoading = false;
-        errorMessage = 'All fields are required.';
+        errorMessage = 'Email and Password are required.';
       });
       return;
     }
@@ -55,25 +42,10 @@ class _SignupPageState extends State<SignupPage> {
       );
 
       User? user = userCredential.user;
-      if (user != null) {
-        // Save the user data in Firestore
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-          'name': name,
-          'email': email,
-          'age': age,
-          'phoneNumber': phoneNumber,
-          'gender': gender,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
-
-        // Optionally, update user profile with the name
-        await user.updateProfile(displayName: name);
+      if (user != null && mounted) {  // Ensure widget is still mounted
+        // Show the pop-up to collect additional details
+        showUserDetailsDialog(context, user);
       }
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
     } catch (e) {
       setState(() {
         errorMessage = 'An error occurred. Please try again later.';
@@ -81,6 +53,94 @@ class _SignupPageState extends State<SignupPage> {
     } finally {
       setState(() {
         isLoading = false;
+      });
+    }
+  }
+
+  // Pop-up dialog to enter additional user details
+  void showUserDetailsDialog(BuildContext context, User user) {
+    TextEditingController nameController = TextEditingController();
+    TextEditingController addressController = TextEditingController();
+    TextEditingController phoneController = TextEditingController();
+    TextEditingController languageController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Enter Your Details'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Name'),
+              ),
+              TextField(
+                controller: addressController,
+                decoration: const InputDecoration(labelText: 'Address'),
+              ),
+              TextField(
+                controller: phoneController,
+                decoration: const InputDecoration(labelText: 'Phone Number'),
+                keyboardType: TextInputType.phone,
+              ),
+              TextField(
+                controller: languageController,
+                decoration: const InputDecoration(labelText: 'Preferred Language'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                if (nameController.text.isNotEmpty && phoneController.text.isNotEmpty) {
+                  saveUserDetails(
+                    user.uid,
+                    nameController.text,
+                    addressController.text,
+                    phoneController.text,
+                    languageController.text,
+                  );
+                  Navigator.of(context).pop(); // Close the dialog
+                  if (mounted) {  // Ensure widget is still mounted
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const HomePage()),
+                    );
+                  }
+                }
+              },
+              child: const Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Function to save user details in Firebase Firestore
+  Future<void> saveUserDetails(
+    String userId,
+    String name,
+    String address,
+    String phone,
+    String language,
+  ) async {
+    final usersCollection = FirebaseFirestore.instance.collection('users');
+
+    try {
+      // Save user details under their UID
+      await usersCollection.doc(userId).set({
+        'name': name,
+        'address': address,
+        'phone': phone,
+        'preferredLanguage': language,
+        'email': emailController.text.trim(),
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Failed to save user details. Please try again later.';
       });
     }
   }
@@ -110,19 +170,6 @@ class _SignupPageState extends State<SignupPage> {
               padding: const EdgeInsets.symmetric(horizontal: 30),
               child: Column(
                 children: [
-                  // Name input
-                  TextField(
-                    controller: nameController,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.person),
-                      labelText: 'Name',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
                   // Email input
                   TextField(
                     controller: emailController,
@@ -144,60 +191,6 @@ class _SignupPageState extends State<SignupPage> {
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.lock),
                       labelText: 'Password',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Age input
-                  TextField(
-                    controller: ageController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.cake),
-                      labelText: 'Age',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Gender dropdown
-                  DropdownButtonFormField<String>(
-                    value: selectedGender,
-                    items: const [
-                      DropdownMenuItem(value: 'Male', child: Text('Male')),
-                      DropdownMenuItem(value: 'Female', child: Text('Female')),
-                      DropdownMenuItem(value: 'Other', child: Text('Other')),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        selectedGender = value ?? 'Male';
-                      });
-                    },
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.wc),
-                      labelText: 'Gender',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Phone Number input
-                  TextField(
-                    controller: phoneNumberController,
-                    keyboardType: TextInputType.phone,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'^\+91[0-9]*')), // Ensure phone starts with +91
-                    ],
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.phone),
-                      labelText: 'Phone Number',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
@@ -230,18 +223,6 @@ class _SignupPageState extends State<SignupPage> {
                       errorMessage,
                       style: const TextStyle(color: Colors.red),
                     ),
-
-                  // Login navigation
-                  TextButton(
-                    onPressed: () => Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LoginPage()), // Ensure you have a LoginPage
-                    ),
-                    child: const Text(
-                      'Already have an account? Log in',
-                      style: TextStyle(fontSize: 16, color: Colors.blue),
-                    ),
-                  ),
                 ],
               ),
             ),

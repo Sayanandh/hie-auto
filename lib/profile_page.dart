@@ -124,7 +124,7 @@ class ProfilePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(label, style: const TextStyle(fontSize: 16)),
-            Container(
+            SizedBox(
               width: 250, // Set a width to control the field's size
               child: TextField(
                 enabled: false, // Set to false to make it non-editable
