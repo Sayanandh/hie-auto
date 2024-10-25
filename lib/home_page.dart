@@ -51,7 +51,7 @@ class HomePage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Welcome Traveller',
+                    'Welcome Rinku',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
