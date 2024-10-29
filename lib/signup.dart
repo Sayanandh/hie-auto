@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'home_page.dart'; // Ensure correct path
+import 'user_data_page.dart'; // Ensure the correct path to UserDataPage.dart
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -26,6 +25,7 @@ class _SignupPageState extends State<SignupPage> {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
+    // Validate email and password
     if (email.isEmpty || password.isEmpty) {
       setState(() {
         isLoading = false;
@@ -35,19 +35,20 @@ class _SignupPageState extends State<SignupPage> {
     }
 
     try {
-      // Firebase Authentication: Register user
+      // Register user with Firebase Authentication
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      User? user = userCredential.user;
-      if (user != null && mounted) {  // Ensure widget is still mounted
-        // Debugging: Check if user UID is obtained correctly
-        print("User registered with UID: ${user.uid}");
-        
-        // Show the pop-up to collect additional details
-        showUserDetailsDialog(context, user);
+      if (userCredential.user != null && mounted) {
+        // If sign-up is successful, navigate to UserDataPage
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => UserDataPage(user: userCredential.user!),
+          ),
+        );
       }
     } catch (e) {
       setState(() {
@@ -60,98 +61,6 @@ class _SignupPageState extends State<SignupPage> {
     }
   }
 
-  // Pop-up dialog to enter additional user details
-  void showUserDetailsDialog(BuildContext context, User user) {
-    TextEditingController nameController = TextEditingController();
-    TextEditingController addressController = TextEditingController();
-    TextEditingController phoneController = TextEditingController();
-    TextEditingController languageController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Enter Your Details'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
-              ),
-              TextField(
-                controller: addressController,
-                decoration: const InputDecoration(labelText: 'Address'),
-              ),
-              TextField(
-                controller: phoneController,
-                decoration: const InputDecoration(labelText: 'Phone Number'),
-                keyboardType: TextInputType.phone,
-              ),
-              TextField(
-                controller: languageController,
-                decoration: const InputDecoration(labelText: 'Preferred Language'),
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            ElevatedButton(
-              onPressed: () {
-                if (nameController.text.isNotEmpty && phoneController.text.isNotEmpty) {
-                  print("Attempting to save user details...");
-                  saveUserDetails(
-                    user.uid,
-                    nameController.text,
-                    addressController.text,
-                    phoneController.text,
-                    languageController.text,
-                  );
-                  Navigator.of(context).pop(); // Close the dialog
-                  if (mounted) {  // Ensure widget is still mounted
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomePage()),
-                    );
-                  }
-                }
-              },
-              child: const Text('Submit'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // Function to save user details in Firebase Firestore
-  Future<void> saveUserDetails(
-    String userId,
-    String name,
-    String address,
-    String phone,
-    String language,
-  ) async {
-    final usersCollection = FirebaseFirestore.instance.collection('users');
-
-    try {
-      // Save user details under their UID
-      await usersCollection.doc(userId).set({
-        'name': name,
-        'address': address,
-        'phone': phone,
-        'preferredLanguage': language,
-        'email': emailController.text.trim(),
-      });
-
-      // Debugging: Check if data was saved successfully
-      print("User details saved for UID: $userId");
-    } catch (e) {
-      setState(() {
-        errorMessage = 'Failed to save user details. Please try again later.';
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -160,8 +69,6 @@ class _SignupPageState extends State<SignupPage> {
         child: Column(
           children: [
             const SizedBox(height: 80),
-
-            // Welcome Text
             const Text(
               'Welcome 👋',
               style: TextStyle(
@@ -177,7 +84,7 @@ class _SignupPageState extends State<SignupPage> {
               padding: const EdgeInsets.symmetric(horizontal: 30),
               child: Column(
                 children: [
-                  // Email input
+                  // Email Input
                   TextField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -191,7 +98,7 @@ class _SignupPageState extends State<SignupPage> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Password input
+                  // Password Input
                   TextField(
                     controller: passwordController,
                     obscureText: true,
@@ -205,7 +112,7 @@ class _SignupPageState extends State<SignupPage> {
                   ),
                   const SizedBox(height: 30),
 
-                  // Sign Up button
+                  // Sign Up Button
                   ElevatedButton(
                     onPressed: register,
                     style: ElevatedButton.styleFrom(
@@ -224,7 +131,7 @@ class _SignupPageState extends State<SignupPage> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Error message
+                  // Error Message
                   if (errorMessage.isNotEmpty)
                     Text(
                       errorMessage,
