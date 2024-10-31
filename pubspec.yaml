@@ -9,9 +9,6 @@ version: 1.0.0+1
 environment:
   sdk: '>=2.17.0 <4.0.0'
 
-
-
-
 dependencies:
   flutter:
     sdk: flutter
@@ -24,13 +21,13 @@ dependencies:
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.1
   cloud_firestore: ^5.4.4
-  shared_preferences: ^2.3.2
-  
-  
-  
+  shared_preferences: ^2.3.2 
 
 
 
+
+shared_preferences_android:
+path: ./relative/path/to/shared_preferences_android
 
 dev_dependencies:
   flutter_test:
