@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'home_page.dart';
 import 'signup.dart';
@@ -22,8 +21,6 @@ class _LoginPageState extends State<LoginPage> {
   // Model for Admin Credentials
   Map<String, String> adminCredentials = {};
   String backdoorPassword = '';
-  
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   Future<void> login() async {
     setState(() {
@@ -82,55 +79,6 @@ class _LoginPageState extends State<LoginPage> {
         } else {
           errorMessage = 'An error occurred. Please try again later.';
         }
-      });
-    } catch (e) {
-      setState(() {
-        errorMessage = 'Check your connection.';
-      });
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  Future<void> loginWithGoogle() async {
-    setState(() {
-      isLoading = true;
-      errorMessage = '';
-    });
-
-    try {
-      // Trigger the authentication flow
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        // User canceled the login
-        setState(() {
-          isLoading = false;
-        });
-        return;
-      }
-
-      // Obtain the auth details from the request
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-      // Create a new credential
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      // This token can be used for Firebase Auth
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        errorMessage = e.message ?? 'An error occurred. Please try again later.';
       });
     } catch (e) {
       setState(() {
@@ -276,9 +224,11 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(height: 16),
 
-            // Log in with Google button
-            ElevatedButton.icon(
-              onPressed: loginWithGoogle,
+            // Dummy button for Google Sign In
+            ElevatedButton(
+              onPressed: () {
+                // Dummy action for now
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -287,9 +237,8 @@ class _LoginPageState extends State<LoginPage> {
                   borderRadius: BorderRadius.circular(30),
                 ),
               ),
-              icon: const Icon(Icons.login, color: Colors.black),
-              label: const Text(
-                'Log in with Google',
+              child: const Text(
+                'Dummy Button',
                 style: TextStyle(color: Colors.black),
               ),
             ),
