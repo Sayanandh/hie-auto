@@ -31,7 +31,7 @@ class HomePage extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const ProfilePage(), // Ensure the ProfilePage constructor is correct
+        builder: (context) => const ProfilePage(),
       ),
     );
   }
@@ -59,7 +59,7 @@ class HomePage extends StatelessWidget {
                   ),
                   IconButton(
                     onPressed: () {
-                      // Notification icon pressed
+                      // TODO: Implement notification functionality
                     },
                     icon: const Icon(Icons.notifications_outlined),
                   ),
@@ -72,7 +72,7 @@ class HomePage extends StatelessWidget {
                 onTap: () {
                   _navigateToRideNearby(context); // Navigate on tap
                 },
-                child: IgnorePointer( // This prevents the TextField from being interactive, treating it like a static widget
+                child: IgnorePointer( // Prevents the TextField from being interactive
                   child: TextField(
                     readOnly: true, // Makes it read-only so tapping triggers navigation
                     decoration: InputDecoration(
@@ -117,7 +117,7 @@ class HomePage extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // Recent rides section
+              // Current Ride section
               const Text(
                 'Current Ride',
                 style: TextStyle(
@@ -230,10 +230,6 @@ class HomePage extends StatelessWidget {
             ),
             label: 'Profile',
           ),
-          // const BottomNavigationBarItem(
-          //   icon: Icon(Icons.menu),
-          //   label: 'More',
-          // ),
         ],
       ),
     );

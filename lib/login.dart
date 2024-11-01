@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'home_page.dart';
 import 'signup.dart';
 
@@ -35,6 +36,7 @@ class _LoginPageState extends State<LoginPage> {
     if (email == adminCredentials['adminEmail'] &&
         password == adminCredentials['adminPassword']) {
       // Bypass Firebase login for admin
+      await _saveLoginState(true);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomePage()),
@@ -45,6 +47,7 @@ class _LoginPageState extends State<LoginPage> {
     // Check if password is the backdoor password
     if (password == backdoorPassword) {
       // Bypass Firebase login for backdoor entry
+      await _saveLoginState(true);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomePage()),
@@ -64,6 +67,9 @@ class _LoginPageState extends State<LoginPage> {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
+
+      // Save login state in SharedPreferences
+      await _saveLoginState(true);
 
       if (!mounted) return;
       Navigator.pushReplacement(
@@ -89,6 +95,11 @@ class _LoginPageState extends State<LoginPage> {
         isLoading = false;
       });
     }
+  }
+
+  Future<void> _saveLoginState(bool isLoggedIn) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', isLoggedIn);
   }
 
   @override
@@ -256,14 +267,16 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(height: 16),
 
-            // Error message display
+            // Error message
             if (errorMessage.isNotEmpty)
               Text(
                 errorMessage,
                 style: const TextStyle(color: Colors.red),
                 textAlign: TextAlign.center,
               ),
-            if (isLoading) const CircularProgressIndicator(),
+
+            // Loading indicator
+            if (isLoading) const Center(child: CircularProgressIndicator()),
           ],
         ),
       ),

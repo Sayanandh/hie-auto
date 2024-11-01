@@ -32,7 +32,10 @@ class _IntroductionPagesState extends State<IntroductionPages> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white, // Added white background color
       appBar: AppBar(
+        backgroundColor: Colors.white, // Set AppBar background to white
+        elevation: 0, // Remove shadow for a cleaner look
         actions: [
           TextButton(
             onPressed: _completeOnboarding,
@@ -52,19 +55,19 @@ class _IntroductionPagesState extends State<IntroductionPages> {
         },
         children: [
           _buildPage(
-            title: 'The best  in your hands with Hie Auto',
-            description: 'Discover the convenience of finding your perfect ride with our  App',
-            image: 'assets/image.png', 
+            title: 'The best in your hands with Hie Auto',
+            description: 'Discover the convenience of finding your perfect ride with our App',
+            image: 'assets/image.png',
           ),
           _buildPage(
             title: 'The perfect ride is just a tap away!',
             description: 'Your journey begins with Hie Auto. Find your ideal ride effortlessly.',
-            image: 'assets/image.png', 
+            image: 'assets/image.png',
           ),
           _buildPage(
             title: 'Your ride, your way. Let\'s get started!',
             description: 'Enter your destination, sit back, and let us take care of the rest.',
-            image: 'assets/image.png', 
+            image: 'assets/image.png',
           ),
         ],
       ),
@@ -77,11 +80,15 @@ class _IntroductionPagesState extends State<IntroductionPages> {
               ),
               child: const Text('Get Started'),
             )
-          : TextButton(
-              onPressed: _nextPage,
-              child: const Text(
-                'Next',
-                style: TextStyle(color: Colors.blue),
+          : Container(
+              color: Colors.white, // Set background color to white
+              width: double.infinity,
+              child: TextButton(
+                onPressed: _nextPage,
+                child: const Text(
+                  'Next',
+                  style: TextStyle(color: Colors.blue),
+                ),
               ),
             ),
     );
