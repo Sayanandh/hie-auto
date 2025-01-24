@@ -162,21 +162,6 @@ Major packages used:
 4. Push to branch (`git push origin feature/AmazingFeature`)
 5. Open Pull Request
 
-## Version History
-
-### Current Version: 1.0.0
-- Initial release
-- Core authentication features
-- Basic HIE functionality
-- Google Maps integration
-- Real-time data sync
-
-### Upcoming Features
-- Enhanced data visualization
-- Advanced reporting
-- AI-powered insights
-- Telemedicine integration
-- Blockchain integration
 
 ## Support
 
@@ -192,18 +177,7 @@ This project is licensed under the MIT License - see LICENSE file for details.
 ## Acknowledgments
 
 - Flutter development team
-- Healthcare standards organizations
 - Open source contributors
 - Beta testers and early adopters
-
-## Compliance
-
-- HIPAA compliant
-- GDPR ready
-- HL7 compatible
-- FHIR supported
-- ISO 27001 certified
-
----
 
 For detailed documentation and API references, visit our [documentation portal](https://docs.hieauto.com).
