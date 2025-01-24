@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'ride_nearby_page.dart'; // Import the RideNearbyPage
-import 'activity_page.dart'; // Import the ActivityPage
-import 'profile_page.dart'; // Import the ProfilePage
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'ride_nearby_page.dart';
+import 'activity_page.dart';
+import 'profile_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
-  // Function to navigate to the RideNearbyPage
+  /// Navigates to the RideNearbyPage
   void _navigateToRideNearby(BuildContext context) {
     Navigator.push(
       context,
@@ -16,7 +18,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // Function to navigate to the ActivityPage
+  /// Navigates to the ActivityPage
   void _navigateToActivity(BuildContext context) {
     Navigator.push(
       context,
@@ -26,7 +28,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // Function to navigate to the ProfilePage
+  /// Navigates to the ProfilePage
   void _navigateToProfile(BuildContext context) {
     Navigator.push(
       context,
@@ -36,45 +38,79 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  /// Fetch user's name from Firestore
+  Future<String?> _fetchUserName() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final docSnapshot = await FirebaseFirestore.instance
+            .collection('users') // Replace with your Firestore collection name
+            .doc(user.uid)
+            .get();
+
+        return docSnapshot.data()?['name'] ?? "Guest";
+      }
+      return "Guest";
+    } catch (e) {
+      debugPrint('Error fetching user name: $e');
+      return "Guest";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB), // Light grey background
+      backgroundColor: const Color(0xFFF8F9FB), 
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Welcome and search section
+              // Welcome and Notification Section
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Welcome Rinku',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  FutureBuilder<String?>(
+                    future: _fetchUserName(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Text(
+                          'Loading...',
+                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        );
+                      }
+                      if (snapshot.hasError) {
+                        return const Text(
+                          'Error loading user',
+                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        );
+                      }
+                      return Text(
+                        'Welcome, ${snapshot.data ?? "Guest"}',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    },
                   ),
                   IconButton(
-                    onPressed: () {
-                      // TODO: Implement notification functionality
-                    },
                     icon: const Icon(Icons.notifications_outlined),
+                    onPressed: () {
+                      // Add notification functionality here if needed
+                    },
                   ),
                 ],
               ),
               const SizedBox(height: 16),
 
-              // Search field (Navigates to RideNearbyPage when clicked)
+              // Search Field (Redirects to RideNearbyPage on tap)
               InkWell(
-                onTap: () {
-                  _navigateToRideNearby(context); // Navigate on tap
-                },
-                child: IgnorePointer( // Prevents the TextField from being interactive
+                onTap: () => _navigateToRideNearby(context),
+                child: IgnorePointer(
                   child: TextField(
-                    readOnly: true, // Makes it read-only so tapping triggers navigation
+                    readOnly: true,
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.search),
                       hintText: 'Where do you want to go?',
@@ -90,9 +126,9 @@ class HomePage extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // "Your current location" label
+              // Current location label
               const Text(
-                'Your current location',
+                'Your Current Location',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -101,23 +137,22 @@ class HomePage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              // Placeholder for the map (to be replaced with map SDK)
+              // Map Placeholder
               Container(
-                height: 200, // Adjust the height as needed
+                height: 200,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300], // Light grey to indicate map area
+                  color: Colors.grey[300],
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Center(
                   child: Text(
-                    'Map goes here',
+                    'Map Placeholder',
                     style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 ),
               ),
               const SizedBox(height: 24),
 
-              // Current Ride section
               const Text(
                 'Current Ride',
                 style: TextStyle(
@@ -128,7 +163,7 @@ class HomePage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              // Ride details container (Example ride information)
+              // Example current ride details card
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -143,48 +178,29 @@ class HomePage extends StatelessWidget {
                 ),
                 padding: const EdgeInsets.all(16),
                 child: Row(
-                  children: [
-                    // Ride location image placeholder
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.location_on, size: 32, color: Colors.grey),
-                    ),
-                    const SizedBox(width: 16),
-
-                    // Ride details text
+                  children: const [
+                    Icon(Icons.location_on, size: 32, color: Colors.grey),
+                    SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
                             'Behind SCMS',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           SizedBox(height: 4),
                           Text(
                             'Kadukuty',
-                            style: TextStyle(fontSize: 14, color: Colors.grey),
+                            style: TextStyle(color: Colors.grey),
                           ),
                           SizedBox(height: 8),
                           Text(
-                            'Date & Time: 16 July 2024, 10:30 PM',
-                            style: TextStyle(fontSize: 14, color: Colors.black),
-                          ),
-                          Text(
                             'Driver: Auto Driver | Seats: 4',
-                            style: TextStyle(fontSize: 14, color: Colors.black),
                           ),
                           Text(
                             'Payment Status: Paid',
-                            style: TextStyle(fontSize: 14, color: Colors.green),
+                            style: TextStyle(color: Colors.green),
                           ),
                         ],
                       ),
@@ -198,7 +214,7 @@ class HomePage extends StatelessWidget {
         ),
       ),
 
-      // Bottom navigation bar
+      /// Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
@@ -206,7 +222,7 @@ class HomePage extends StatelessWidget {
         unselectedItemColor: Colors.grey,
         showSelectedLabels: false,
         showUnselectedLabels: false,
-        iconSize: 22, // Decrease the icon size
+        iconSize: 22,
         items: [
           const BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -215,18 +231,14 @@ class HomePage extends StatelessWidget {
           BottomNavigationBarItem(
             icon: IconButton(
               icon: const Icon(Icons.history),
-              onPressed: () {
-                _navigateToActivity(context); // Navigate to activity page
-              },
+              onPressed: () => _navigateToActivity(context),
             ),
             label: 'Activity',
           ),
           BottomNavigationBarItem(
             icon: IconButton(
               icon: const Icon(Icons.person_outline),
-              onPressed: () {
-                _navigateToProfile(context); // Navigate to profile page
-              },
+              onPressed: () => _navigateToProfile(context),
             ),
             label: 'Profile',
           ),

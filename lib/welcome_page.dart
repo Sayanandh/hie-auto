@@ -15,7 +15,7 @@ class WelcomePage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch, // Makes buttons stretch to fill the width
             children: [
               const Spacer(flex: 2), // Add space at the top
-              
+
               // Top image (optional, you can adjust or remove)
               Image.asset(
                 'assets/haiauto.png', // Replace with your image asset
@@ -23,7 +23,7 @@ class WelcomePage extends StatelessWidget {
                 height: 200,
                 //fit: BoxFit.cover, // Make the image cover the width
               ),
-              
+
               const Spacer(flex: 1), // Add space between image and text
 
               // Main text
@@ -38,16 +38,16 @@ class WelcomePage extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Sign up or log in to find out the best car for you',
+                'Sign up or log in to find out the best Ride for you',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.black54,
                 ),
                 textAlign: TextAlign.center,
               ),
-              
+
               const Spacer(flex: 1), // Add space between text and buttons
-              
+
               // Sign up button
               ElevatedButton(
                 onPressed: () => Navigator.pushNamed(context, '/signup'),
@@ -96,7 +96,7 @@ class WelcomePage extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 12), // Space between buttons
 
               // Log in link at the bottom
@@ -110,7 +110,7 @@ class WelcomePage extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               const Spacer(flex: 2), // Space at the bottom
             ],
           ),

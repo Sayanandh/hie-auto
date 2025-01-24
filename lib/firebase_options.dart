@@ -30,8 +30,8 @@ class DefaultFirebaseOptions {
         return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for linux - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
+          'DefaultFirebaseOptions are not configured for Linux. '
+          'Run the FlutterFire CLI to set it up.',
         );
       default:
         throw UnsupportedError(

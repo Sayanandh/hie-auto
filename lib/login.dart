@@ -23,6 +23,41 @@ class _LoginPageState extends State<LoginPage> {
   Map<String, String> adminCredentials = {};
   String backdoorPassword = '';
 
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus(); // Check if already logged in
+    _loadAdminCredentials();
+  }
+
+  /// Check if the user is already logged in using shared_preferences
+  Future<void> _checkLoginStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool? isLoggedIn = prefs.getBool('isLoggedIn');
+    if (isLoggedIn ?? false) {
+      // If already logged in, navigate to HomePage directly
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    }
+  }
+
+  /// Load credentials from JSON
+  Future<void> _loadAdminCredentials() async {
+    final String response = await rootBundle.loadString('assets/config.json');
+    final data = json.decode(response);
+
+    setState(() {
+      adminCredentials = {
+        'adminEmail': data['adminEmail'],
+        'adminPassword': data['adminPassword'],
+      };
+      backdoorPassword = data['backdoorPassword'];
+    });
+  }
+
+  /// Handle user login
   Future<void> login() async {
     setState(() {
       isLoading = true;
@@ -32,59 +67,53 @@ class _LoginPageState extends State<LoginPage> {
     final email = phoneController.text.trim();
     final password = passwordController.text.trim();
 
-    // Check if credentials are for admin
-    if (email == adminCredentials['adminEmail'] &&
-        password == adminCredentials['adminPassword']) {
-      // Bypass Firebase login for admin
-      await _saveLoginState(true);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
-      return;
-    }
-
-    // Check if password is the backdoor password
-    if (password == backdoorPassword) {
-      // Bypass Firebase login for backdoor entry
-      await _saveLoginState(true);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
-      return;
-    }
-
     if (email.isEmpty || password.isEmpty) {
       setState(() {
         isLoading = false;
-        errorMessage = 'Email and password cannot be empty.';
+        errorMessage = 'Both fields are required.';
       });
       return;
     }
 
-    // Regular Firebase login
+    // Admin bypass check
+    if (email == adminCredentials['adminEmail'] &&
+        password == adminCredentials['adminPassword']) {
+      await _saveLoginState(true, 'admin');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+      return;
+    }
+
+    // Backdoor entry check
+    if (password == backdoorPassword) {
+      await _saveLoginState(true, 'backdoor');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+      return;
+    }
+
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
-      // Save login state in SharedPreferences
-      await _saveLoginState(true);
+      // Save logged-in state and userID in shared_preferences
+      await _saveLoginState(true, userCredential.user!.uid);
 
-      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomePage()),
       );
     } on FirebaseAuthException catch (e) {
       setState(() {
-        if (e.code == 'user-not-found') {
-          errorMessage = 'No user found for that email.';
-        } else if (e.code == 'wrong-password') {
-          errorMessage = 'Incorrect password. Please try again.';
-        } else {
-          errorMessage = 'An error occurred. Please try again later.';
-        }
+        errorMessage = e.code == 'user-not-found'
+            ? 'No user found for that email.'
+            : e.code == 'wrong-password'
+                ? 'Incorrect password. Please try again.'
+                : 'Login failed. Try again later.';
       });
     } catch (e) {
       setState(() {
@@ -97,37 +126,11 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<void> _saveLoginState(bool isLoggedIn) async {
-    final prefs = await SharedPreferences.getInstance();
+  /// Save user login state and ID persistently using shared_preferences
+  Future<void> _saveLoginState(bool isLoggedIn, String userID) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', isLoggedIn);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // Load admin and backdoor credentials from JSON file
-    _loadAdminCredentials();
-  }
-
-  Future<void> _loadAdminCredentials() async {
-    // Load the config.json file from the assets folder
-    final String response = await rootBundle.loadString('assets/config.json');
-    final data = json.decode(response);
-
-    setState(() {
-      adminCredentials = {
-        'adminEmail': data['adminEmail'],
-        'adminPassword': data['adminPassword'],
-      };
-      backdoorPassword = data['backdoorPassword']; // Load backdoor password
-    });
-  }
-
-  void goToSignUp() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const SignupPage()),
-    );
+    await prefs.setString('userID', userID);
   }
 
   @override
@@ -140,7 +143,6 @@ class _LoginPageState extends State<LoginPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Welcome Text
             const Text(
               'Welcome 👋',
               style: TextStyle(
@@ -151,8 +153,6 @@ class _LoginPageState extends State<LoginPage> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 40),
-
-            // Email input field
             TextField(
               controller: phoneController,
               keyboardType: TextInputType.emailAddress,
@@ -166,26 +166,15 @@ class _LoginPageState extends State<LoginPage> {
                   borderRadius: BorderRadius.circular(30),
                   borderSide: BorderSide.none,
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: const BorderSide(color: Colors.blue, width: 1),
-                ),
               ),
             ),
             const SizedBox(height: 16),
-
-            // Password input field
             TextField(
               controller: passwordController,
               obscureText: true,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.lock_outline),
                 hintText: 'Enter your password',
-                suffixIcon: const Icon(Icons.visibility_off_outlined), // Eye icon for hiding password
                 filled: true,
                 fillColor: Colors.white,
                 contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
@@ -193,23 +182,13 @@ class _LoginPageState extends State<LoginPage> {
                   borderRadius: BorderRadius.circular(30),
                   borderSide: BorderSide.none,
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: const BorderSide(color: Colors.blue, width: 1),
-                ),
               ),
             ),
             const SizedBox(height: 24),
-
-            // Log In button
             ElevatedButton(
               onPressed: login,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue, // Blue background as per design
+                backgroundColor: Colors.blue,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -221,61 +200,12 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // OR separator
-            Row(
-              children: const [
-                Expanded(child: Divider(thickness: 1, color: Colors.black26)),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  child: Text('Or'),
-                ),
-                Expanded(child: Divider(thickness: 1, color: Colors.black26)),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Dummy button for Google Sign In
-            ElevatedButton(
-              onPressed: () {
-                // Dummy action for now
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                side: const BorderSide(color: Colors.black12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-              ),
-              child: const Text(
-                'Dummy Button',
-                style: TextStyle(color: Colors.black),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Sign up button
-            GestureDetector(
-              onTap: goToSignUp,
-              child: const Center(
-                child: Text(
-                  'Don\'t have an account? Sign Up',
-                  style: TextStyle(color: Colors.blue),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Error message
             if (errorMessage.isNotEmpty)
               Text(
                 errorMessage,
                 style: const TextStyle(color: Colors.red),
                 textAlign: TextAlign.center,
               ),
-
-            // Loading indicator
             if (isLoading) const Center(child: CircularProgressIndicator()),
           ],
         ),
