@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'login.dart' as login;
-import 'signup.dart' as signup;
+import 'package:logger/logger.dart';
+import 'login.dart';
+import 'signup.dart';
 import 'home_page.dart';
 import 'profile_page.dart';
 import 'activity_page.dart';
@@ -10,19 +10,21 @@ import 'ride_booking_page.dart';
 import 'payment_page.dart';
 import 'welcome_page.dart';
 import 'introduction_pages.dart';
-import 'ride_nearby_page.dart'; // Import the RideNearbyPage
+import 'ride_nearby_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final logger = Logger();
 
-  // Initialize Firebase
-  await Firebase.initializeApp();
-
-  // Check if onboarding is complete
-  final prefs = await SharedPreferences.getInstance();
-  final bool onboardingComplete = prefs.getBool('onboardingComplete') ?? false;
-
-  runApp(MyApp(onboardingComplete: onboardingComplete));
+  try {
+    // Check if onboarding is complete
+    final prefs = await SharedPreferences.getInstance();
+    final bool onboardingComplete = prefs.getBool('onboardingComplete') ?? false;
+    runApp(MyApp(onboardingComplete: onboardingComplete));
+  } catch (e) {
+    logger.e('Error initializing app: $e');
+    runApp(const MyApp(onboardingComplete: false));
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -54,15 +56,16 @@ class MyApp extends StatelessWidget {
       routes: {
         '/introduction': (context) => const IntroductionPages(),
         '/welcome': (context) => const WelcomePage(),
-        '/login': (context) => const login.LoginPage(),
-        '/signup': (context) => const signup.SignupPage(),
+        '/login': (context) => const LoginPage(),
+        '/signup': (context) => const SignupPage(),
         '/home': (context) => const HomePage(),
         '/profile': (context) => const ProfilePage(),
         '/activity': (context) => const ActivityPage(),
         '/rideBooking': (context) => const RideBookingPage(),
         '/payment': (context) => const PaymentPage(),
-        '/rideNearby': (context) => const RideNearbyPage(), // Added route for RideNearbyPage
+        '/rideNearby': (context) => const RideNearbyPage(),
       },
+      debugShowCheckedModeBanner: false,
     );
   }
 }

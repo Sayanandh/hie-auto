@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class ActivityPage extends StatelessWidget {
   const ActivityPage({super.key});
@@ -267,5 +269,25 @@ class ProfileScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+// Implement local storage for ride history
+class RideHistoryService {
+  Future<List<Map<String, dynamic>>> getRideHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? historyJson = prefs.getString('ride_history');
+    if (historyJson != null) {
+      List<dynamic> decoded = json.decode(historyJson);
+      return List<Map<String, dynamic>>.from(decoded);
+    }
+    return [];
+  }
+
+  Future<void> saveRide(Map<String, dynamic> rideData) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<Map<String, dynamic>> history = await getRideHistory();
+    history.add(rideData);
+    await prefs.setString('ride_history', json.encode(history));
   }
 }

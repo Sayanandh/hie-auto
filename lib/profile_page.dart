@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -30,8 +31,7 @@ class ProfilePage extends StatelessWidget {
               const Center(
                 child: CircleAvatar(
                   radius: 60,
-                  backgroundImage: NetworkImage(
-                      'https://via.placeholder.com/150'), // Placeholder image
+                  backgroundImage: AssetImage('assets/profile_placeholder.png'),
                 ),
               ),
               const SizedBox(height: 20),
@@ -118,5 +118,15 @@ class ProfilePage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<Map<String, dynamic>> getUserProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    return {
+      'name': prefs.getString('user_name') ?? '',
+      'phone': prefs.getString('user_phone') ?? '',
+      'age': prefs.getInt('user_age')?.toString() ?? '',
+      'language': prefs.getString('user_language') ?? '',
+    };
   }
 }

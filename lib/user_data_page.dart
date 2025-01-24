@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'home_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserDataPage extends StatefulWidget {
   final User user;
@@ -62,25 +61,24 @@ class _UserDataPageState extends State<UserDataPage> {
     });
 
     try {
-      await FirebaseFirestore.instance.collection('users').doc(widget.user.uid).set({
-        'name': nameController.text.trim(),
-        'phone': phoneController.text.trim(),
-        'age': int.parse(ageController.text.trim()),
-        'preferredLanguage': languageController.text.trim(),
-        'email': widget.user.email,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_name', nameController.text.trim());
+      await prefs.setString('user_phone', phoneController.text.trim());
+      await prefs.setInt('user_age', int.parse(ageController.text.trim()));
+      await prefs.setString('user_language', languageController.text.trim());
 
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomePage()),
       );
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         errorMessage = 'Failed to save user details. Please try again.';
       });
-      debugPrint('Error saving user details: $e');
     } finally {
+      if (!mounted) return;
       setState(() {
         isLoading = false;
       });
@@ -198,4 +196,12 @@ class _UserDataPageState extends State<UserDataPage> {
       ),
     );
   }
+}
+
+// Add User class
+class User {
+  final String uid;
+  final String? email;
+
+  User({required this.uid, this.email});
 }
